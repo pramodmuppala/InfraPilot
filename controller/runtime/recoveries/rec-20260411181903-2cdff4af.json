@@ -1,0 +1,21 @@
+{
+  "recovery_id": "rec-20260411181903-2cdff4af",
+  "instances": [
+    "app3"
+  ],
+  "health_path": "/",
+  "timeout_seconds": 20,
+  "started_at": "2026-04-11T18:19:03.018239+00:00",
+  "completed_at": "2026-04-11T18:19:03.024708+00:00",
+  "status": "failed",
+  "steps": [
+    {
+      "name": "recover_instance",
+      "status": "failed",
+      "instance": "app3",
+      "return_code": 2,
+      "stdout": "",
+      "stderr": "Instance base does not exist: /opt/tomcat/app3\n"
+    }
+  ]
+}
