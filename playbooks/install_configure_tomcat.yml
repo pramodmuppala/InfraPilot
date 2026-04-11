@@ -1,0 +1,203 @@
+---
+- name: Base Tomcat install and configure on remote Ubuntu targets
+  hosts: tomcat
+  become: true
+  gather_facts: true
+
+  vars:
+    instance_id: 1
+    instance_name: "{{ tomcat.instance_name_prefix }}{{ instance_id }}"
+    instance_base: "{{ tomcat.catalina_base_root }}/{{ instance_name }}"
+    http_port: "{{ tomcat.base_ports.http }}"
+    redirect_port: "{{ tomcat.base_ports.redirect }}"
+    shutdown_port: "{{ tomcat.base_ports.shutdown }}"
+    tomcat_archive_path: "/tmp/apache-tomcat-{{ tomcat.archive_version }}.tar.gz"
+    tomcat_extract_root: "/tmp/apache-tomcat-{{ tomcat.archive_version }}"
+
+  tasks:
+    - name: Ensure apt cache is up to date
+      ansible.builtin.apt:
+        update_cache: true
+      when: ansible_os_family == 'Debian' and tomcat.install_prereqs
+
+    - name: Install required packages on Debian/Ubuntu
+      ansible.builtin.apt:
+        name: "{{ tomcat.java_packages }}"
+        state: present
+      when: ansible_os_family == 'Debian' and tomcat.install_prereqs
+
+    - name: Ensure runtime group exists
+      ansible.builtin.group:
+        name: "{{ tomcat.runtime_group }}"
+        state: present
+
+    - name: Ensure runtime user exists
+      ansible.builtin.user:
+        name: "{{ tomcat.runtime_user }}"
+        group: "{{ tomcat.runtime_group }}"
+        shell: /bin/bash
+        system: true
+        create_home: false
+        state: present
+
+    - name: Create top-level Tomcat directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      loop:
+        - /opt/products
+        - /opt/products/tomcat
+        - "{{ tomcat.catalina_base_root }}"
+
+    - name: Download Tomcat archive
+      ansible.builtin.get_url:
+        url: "{{ tomcat.archive_url }}"
+        dest: "{{ tomcat_archive_path }}"
+        mode: '0644'
+      when: tomcat.install_tomcat
+
+    - name: Create shared home parent directory
+      file:
+        path: "{{ tomcat.shared_home | dirname }}"
+        state: directory
+        owner: "{{ tomcat.runtime_user }}"
+        group: "{{ tomcat.runtime_group }}"
+        mode: "0755"
+
+    - name: Unarchive Tomcat distribution
+      ansible.builtin.unarchive:
+        src: "{{ tomcat_archive_path }}"
+        dest: /opt/products/tomcat
+        remote_src: true
+        creates: "/opt/products/tomcat/apache-tomcat-{{ tomcat.archive_version }}/bin/catalina.sh"
+      when: tomcat.install_tomcat
+
+    - name: Link shared home to versioned Tomcat directory
+      ansible.builtin.file:
+        src: "{{ tomcat.shared_home | dirname }}/apache-tomcat-{{ tomcat.archive_version }}"
+        dest: "{{ tomcat.shared_home }}"
+        state: link
+        force: true
+
+    - name: Create instance directory structure for app1
+      ansible.builtin.file:
+        path: "{{ instance_base }}/{{ item }}"
+        state: directory
+        owner: "{{ tomcat.runtime_user }}"
+        group: "{{ tomcat.runtime_group }}"
+        mode: '0755'
+      loop:
+        - bin
+        - conf
+        - logs
+        - temp
+        - webapps
+        - work
+        - lib
+
+    - name: Check whether app1 server.xml already exists
+      ansible.builtin.stat:
+        path: "{{ instance_base }}/conf/server.xml"
+      register: app1_server_xml_stat
+
+    - name: Copy baseline conf files from shared home into app1 if missing
+      ansible.builtin.copy:
+        src: "{{ tomcat.shared_home }}/conf/"
+        dest: "{{ instance_base }}/conf/"
+        remote_src: true
+        owner: "{{ tomcat.runtime_user }}"
+        group: "{{ tomcat.runtime_group }}"
+        mode: preserve
+      when: not app1_server_xml_stat.stat.exists
+
+    - name: Render setenv.sh for app1
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/setenv.sh.j2"
+        dest: "{{ tomcat.catalina_base_root }}/app1/bin/setenv.sh"
+        owner: "{{ tomcat.runtime_user }}"
+        group: "{{ tomcat.runtime_group }}"
+        mode: '0755'
+      vars:
+        instance_base: "{{ tomcat.catalina_base_root }}/app1"
+
+    - name: Validate setenv.sh syntax
+      ansible.builtin.command: "bash -n {{ instance_base }}/bin/setenv.sh"
+      changed_when: false
+
+    - name: Render server.xml for app1
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/server.xml.j2"
+        dest: "{{ tomcat.catalina_base_root }}/app1/conf/server.xml"
+        owner: "{{ tomcat.runtime_user }}"
+        group: "{{ tomcat.runtime_group }}"
+        mode: '0644'
+      vars:
+        instance_base: "{{ tomcat.catalina_base_root }}/app1"
+        shutdown_port: "{{ tomcat.base_ports.shutdown }}"
+        http_port: "{{ tomcat.base_ports.http }}"
+        redirect_port: "{{ tomcat.base_ports.redirect }}"
+
+    - name: Validate server.xml with xmllint
+      ansible.builtin.command: "xmllint --noout {{ instance_base }}/conf/server.xml"
+      changed_when: false
+
+    - name: Run Tomcat configtest for app1
+      ansible.builtin.shell: |
+        export CATALINA_BASE="{{ instance_base }}"
+        export CATALINA_HOME="{{ tomcat.shared_home }}"
+        export JAVA_HOME="{{ tomcat.java_home }}"
+        "{{ tomcat.shared_home }}/bin/catalina.sh" configtest
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Stop app1 if already running
+      ansible.builtin.shell: |
+        export CATALINA_BASE="{{ instance_base }}"
+        export CATALINA_HOME="{{ tomcat.shared_home }}"
+        export JAVA_HOME="{{ tomcat.java_home }}"
+        "{{ tomcat.shared_home }}/bin/shutdown.sh" || true
+      args:
+        executable: /bin/bash
+      changed_when: false
+      become_user: "{{ tomcat.runtime_user }}"
+
+    - name: Wait briefly after shutdown
+      ansible.builtin.pause:
+        seconds: 3
+
+    - name: Start app1
+      ansible.builtin.shell: |
+        export CATALINA_BASE="{{ instance_base }}"
+        export CATALINA_HOME="{{ tomcat.shared_home }}"
+        export JAVA_HOME="{{ tomcat.java_home }}"
+        "{{ tomcat.shared_home }}/bin/startup.sh"
+      args:
+        executable: /bin/bash
+      become_user: "{{ tomcat.runtime_user }}"
+
+    - name: Wait for app1 HTTP port
+      ansible.builtin.wait_for:
+        host: "127.0.0.1"
+        port: "{{ http_port | int }}"
+        timeout: 30
+      when: tomcat.verify_health
+
+    - name: Run HTTP health check for app1
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ http_port }}{{ tomcat.health_path }}"
+        method: GET
+        status_code: [200, 301, 302, 403, 404]
+        timeout: "{{ tomcat.health_timeout }}"
+      register: app1_health
+      when: tomcat.verify_health
+
+    - name: Report app1 result
+      ansible.builtin.debug:
+        msg:
+          instance: "{{ instance_name }}"
+          http_port: "{{ http_port }}"
+          health_status: "{{ app1_health.status | default('skipped') }}"

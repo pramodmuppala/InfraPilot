@@ -1,0 +1,291 @@
+---
+- name: Scale Tomcat instances on remote Ubuntu targets
+  hosts: tomcat
+  become: true
+  gather_facts: true
+
+  vars:
+    tomcat_cfg: "{{ tomcat }}"
+
+  tasks:
+    - name: Validate requested instance_count
+      ansible.builtin.assert:
+        that:
+          - tomcat_cfg.instance_count | int >= 1
+          - tomcat_cfg.instance_start_index | int >= 1
+          - tomcat_cfg.port_stride | int > 0
+        fail_msg: "instance_count must be >= 1, instance_start_index >= 1, and port_stride > 0"
+
+    - name: Ensure shared home exists before scaling
+      ansible.builtin.stat:
+        path: "{{ tomcat_cfg.shared_home }}"
+      register: shared_home_stat
+
+    - name: Fail if shared Tomcat home does not exist
+      ansible.builtin.fail:
+        msg: "Shared Tomcat home {{ tomcat_cfg.shared_home }} does not exist. Run base install first."
+      when: not shared_home_stat.stat.exists
+
+    - name: Ensure catalina base root exists
+      ansible.builtin.file:
+        path: "{{ tomcat_cfg.catalina_base_root }}"
+        state: directory
+        owner: "{{ tomcat_cfg.runtime_user }}"
+        group: "{{ tomcat_cfg.runtime_group }}"
+        mode: "0755"
+
+    - name: Build desired instance list
+      ansible.builtin.set_fact:
+        desired_instances: "{{ desired_instances | default([]) + [ tomcat_cfg.instance_name_prefix ~ (item | string) ] }}"
+      loop: "{{ range(tomcat_cfg.instance_start_index | int, (tomcat_cfg.instance_start_index | int) + (tomcat_cfg.instance_count | int)) | list }}"
+
+    - name: Discover existing instance directories
+      ansible.builtin.find:
+        paths: "{{ tomcat_cfg.catalina_base_root }}"
+        file_type: directory
+        patterns: "{{ tomcat_cfg.instance_name_prefix }}*"
+        recurse: false
+      register: discovered_instance_dirs
+
+    - name: Build existing instance list
+      ansible.builtin.set_fact:
+        existing_instances: "{{ discovered_instance_dirs.files | map(attribute='path') | map('basename') | list | sort }}"
+
+    - name: Compute create and remove lists
+      ansible.builtin.set_fact:
+        instances_to_create: "{{ desired_instances | difference(existing_instances | default([])) | sort }}"
+        instances_to_remove: "{{ existing_instances | difference(desired_instances) | sort }}"
+
+    - name: Show scale plan
+      ansible.builtin.debug:
+        msg:
+          desired: "{{ desired_instances }}"
+          existing: "{{ existing_instances | default([]) }}"
+          create: "{{ instances_to_create }}"
+          remove: "{{ instances_to_remove }}"
+
+    - name: Create base directory tree for new instances
+      ansible.builtin.file:
+        path: "{{ tomcat_cfg.catalina_base_root }}/{{ item.0 }}/{{ item.1 }}"
+        state: directory
+        owner: "{{ tomcat_cfg.runtime_user }}"
+        group: "{{ tomcat_cfg.runtime_group }}"
+        mode: "0755"
+      loop: "{{ instances_to_create | product(['bin', 'conf', 'logs', 'temp', 'webapps', 'work']) | list }}"
+      when: instances_to_create | length > 0
+
+    - name: Copy baseline conf files for new instances
+      ansible.builtin.copy:
+        src: "{{ tomcat_cfg.shared_home }}/conf/"
+        dest: "{{ tomcat_cfg.catalina_base_root }}/{{ item }}/conf/"
+        remote_src: true
+        owner: "{{ tomcat_cfg.runtime_user }}"
+        group: "{{ tomcat_cfg.runtime_group }}"
+        mode: preserve
+      loop: "{{ instances_to_create }}"
+      when: instances_to_create | length > 0
+
+    - name: Copy webapps for new instances
+      ansible.builtin.copy:
+        src: "{{ tomcat_cfg.shared_home }}/webapps/"
+        dest: "{{ tomcat_cfg.catalina_base_root }}/{{ item }}/webapps/"
+        remote_src: true
+        owner: "{{ tomcat_cfg.runtime_user }}"
+        group: "{{ tomcat_cfg.runtime_group }}"
+        mode: preserve
+      loop: "{{ instances_to_create }}"
+      when: instances_to_create | length > 0
+
+    - name: Build instance definitions for all desired instances
+      ansible.builtin.set_fact:
+        instance_definitions: "{{ instance_definitions | default([]) + [ {
+          'instance_name': item,
+          'instance_number': ((item | regex_replace('^' ~ tomcat_cfg.instance_name_prefix, '')) | int),
+          'instance_base': tomcat_cfg.catalina_base_root ~ '/' ~ item,
+          'port_offset': ((((item | regex_replace('^' ~ tomcat_cfg.instance_name_prefix, '')) | int) - (tomcat_cfg.instance_start_index | int)) * (tomcat_cfg.port_stride | int)),
+          'shutdown_port': ((tomcat_cfg.base_ports.shutdown | int) + ((((item | regex_replace('^' ~ tomcat_cfg.instance_name_prefix, '')) | int) - (tomcat_cfg.instance_start_index | int)) * (tomcat_cfg.port_stride | int))),
+          'http_port': ((tomcat_cfg.base_ports.http | int) + ((((item | regex_replace('^' ~ tomcat_cfg.instance_name_prefix, '')) | int) - (tomcat_cfg.instance_start_index | int)) * (tomcat_cfg.port_stride | int))),
+          'redirect_port': ((tomcat_cfg.base_ports.redirect | int) + ((((item | regex_replace('^' ~ tomcat_cfg.instance_name_prefix, '')) | int) - (tomcat_cfg.instance_start_index | int)) * (tomcat_cfg.port_stride | int)))
+        } ] }}"
+      loop: "{{ desired_instances }}"
+
+    - name: Render setenv.sh for desired instances
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/setenv.sh.j2"
+        dest: "{{ item.instance_base }}/bin/setenv.sh"
+        owner: "{{ tomcat_cfg.runtime_user }}"
+        group: "{{ tomcat_cfg.runtime_group }}"
+        mode: "0755"
+      loop: "{{ instance_definitions }}"
+      loop_control:
+        label: "{{ item.instance_name }}"
+      vars:
+        instance_base: "{{ item.instance_base }}"
+        instance_name: "{{ item.instance_name }}"
+        http_port: "{{ item.http_port }}"
+        shutdown_port: "{{ item.shutdown_port }}"
+        redirect_port: "{{ item.redirect_port }}"
+
+    - name: Render server.xml for desired instances
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/server.xml.j2"
+        dest: "{{ item.instance_base }}/conf/server.xml"
+        owner: "{{ tomcat_cfg.runtime_user }}"
+        group: "{{ tomcat_cfg.runtime_group }}"
+        mode: "0644"
+      loop: "{{ instance_definitions }}"
+      loop_control:
+        label: "{{ item.instance_name }}"
+      vars:
+        instance_base: "{{ item.instance_base }}"
+        instance_name: "{{ item.instance_name }}"
+        http_port: "{{ item.http_port }}"
+        shutdown_port: "{{ item.shutdown_port }}"
+        redirect_port: "{{ item.redirect_port }}"
+
+    - name: Validate server.xml for desired instances
+      ansible.builtin.command:
+        cmd: xmllint --noout "{{ item.instance_base }}/conf/server.xml"
+      loop: "{{ instance_definitions }}"
+      loop_control:
+        label: "{{ item.instance_name }}"
+      changed_when: false
+      failed_when: false
+
+    - name: Run Tomcat configtest for desired instances
+      ansible.builtin.shell: |
+        export CATALINA_BASE="{{ item.instance_base }}"
+        export CATALINA_HOME="{{ tomcat_cfg.shared_home }}"
+        export JAVA_HOME="{{ tomcat_cfg.java_home }}"
+        "{{ tomcat_cfg.shared_home }}/bin/catalina.sh" configtest
+      args:
+        executable: /bin/bash
+      loop: "{{ instance_definitions }}"
+      loop_control:
+        label: "{{ item.instance_name }}"
+      become: true
+      become_user: "{{ tomcat_cfg.runtime_user }}"
+      register: configtest_results
+      changed_when: false
+      failed_when: false
+
+    - name: Detect running desired instances
+      ansible.builtin.shell: |
+        ps -ef | grep -v grep | grep "Dcatalina.base={{ tomcat_cfg.catalina_base_root }}/{{ item }}" >/dev/null && echo running || echo stopped
+      args:
+        executable: /bin/bash
+      loop: "{{ desired_instances }}"
+      register: instance_runtime_state
+      changed_when: false
+
+    - name: Build running instance list
+      ansible.builtin.set_fact:
+        running_instances: >-
+          {{
+            instance_runtime_state.results
+            | selectattr('stdout', 'equalto', 'running')
+            | map(attribute='item')
+            | list
+            | sort
+          }}
+
+    - name: Compute instances that need startup
+      ansible.builtin.set_fact:
+        instances_to_start: "{{ desired_instances | difference(running_instances | default([])) | sort }}"
+
+    - name: Show runtime plan
+      ansible.builtin.debug:
+        msg:
+          running: "{{ running_instances | default([]) }}"
+          start: "{{ instances_to_start }}"
+
+    - name: Start required instances
+      ansible.builtin.shell: |
+        export CATALINA_BASE="{{ tomcat_cfg.catalina_base_root }}/{{ item }}"
+        export CATALINA_HOME="{{ tomcat_cfg.shared_home }}"
+        export JAVA_HOME="{{ tomcat_cfg.java_home }}"
+        "{{ tomcat_cfg.shared_home }}/bin/startup.sh"
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ tomcat_cfg.runtime_user }}"
+      loop: "{{ instances_to_start }}"
+      when: instances_to_start | length > 0
+
+    - name: Wait for required instance HTTP ports
+      ansible.builtin.wait_for:
+        host: "127.0.0.1"
+        port: "{{ item.http_port }}"
+        timeout: "{{ tomcat_cfg.startup_wait_seconds | int + 30 }}"
+      loop: "{{ instance_definitions | selectattr('instance_name', 'in', instances_to_start | default([])) | list }}"
+      loop_control:
+        label: "{{ item.instance_name }}"
+      when: instances_to_start | length > 0
+
+    - name: Health-check required instances
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ item.http_port }}{{ tomcat_cfg.health_path }}"
+        method: GET
+        timeout: "{{ tomcat_cfg.health_timeout | int }}"
+        status_code: 200
+      loop: "{{ instance_definitions | selectattr('instance_name', 'in', instances_to_start | default([])) | list }}"
+      loop_control:
+        label: "{{ item.instance_name }}"
+      register: healthcheck_results
+      retries: 5
+      delay: 5
+      until: healthcheck_results is not failed
+      when:
+        - tomcat_cfg.verify_health | bool
+        - instances_to_start | length > 0
+
+    - name: Stop extra instances before deletion
+      ansible.builtin.shell: |
+        export CATALINA_BASE="{{ tomcat_cfg.catalina_base_root }}/{{ item }}"
+        export CATALINA_HOME="{{ tomcat_cfg.shared_home }}"
+        export JAVA_HOME="{{ tomcat_cfg.java_home }}"
+        "{{ tomcat_cfg.shared_home }}/bin/shutdown.sh" || true
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ tomcat_cfg.runtime_user }}"
+      loop: "{{ instances_to_remove }}"
+      when:
+        - tomcat_cfg.destroy_enabled | bool
+        - instances_to_remove | length > 0
+
+    - name: Wait briefly before removing extra instances
+      ansible.builtin.pause:
+        seconds: 5
+      when:
+        - tomcat_cfg.destroy_enabled | bool
+        - instances_to_remove | length > 0
+
+    - name: Force kill stray Java processes that still reference removed CATALINA_BASE values
+      ansible.builtin.shell: |
+        pgrep -af "Dcatalina.base={{ tomcat_cfg.catalina_base_root }}/{{ item }}" | awk '{print $1}' | xargs -r kill -9
+      args:
+        executable: /bin/bash
+      loop: "{{ instances_to_remove }}"
+      when:
+        - tomcat_cfg.destroy_enabled | bool
+        - instances_to_remove | length > 0
+      changed_when: false
+      failed_when: false
+
+    - name: Remove extra instance directories
+      ansible.builtin.file:
+        path: "{{ tomcat_cfg.catalina_base_root }}/{{ item }}"
+        state: absent
+      loop: "{{ instances_to_remove }}"
+      when:
+        - tomcat_cfg.destroy_enabled | bool
+        - instances_to_remove | length > 0
+
+    - name: Final scale summary
+      ansible.builtin.debug:
+        msg:
+          final_target_count: "{{ tomcat_cfg.instance_count }}"
+          created: "{{ instances_to_create }}"
+          started: "{{ instances_to_start }}"
+          removed: "{{ instances_to_remove if (tomcat_cfg.destroy_enabled | bool) else [] }}"

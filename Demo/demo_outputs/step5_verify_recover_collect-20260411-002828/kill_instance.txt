@@ -1,0 +1,5 @@
++ ansible -i /home/parallels/Desktop/Parallels Shared Folders/Home/Desktop/Automation/InfraPilot/inventory/lab.ini tomcat -b -m shell -a pgrep -af 'Dcatalina.base=/opt/tomcat/app3' | awk '{print $1}' | xargs -r kill -9
+tomcat-node-1 | FAILED | rc=-9 >>
+non-zero return code
+tomcat-node-2 | FAILED | rc=-9 >>
+non-zero return code

@@ -1,0 +1,225 @@
++ /bin/bash -lc cd "/home/parallels/Desktop/Parallels Shared Folders/Home/Desktop/Automation/InfraPilot" && TOMCAT_INSTANCE_COUNT=5 TOMCAT_DESTROY_ENABLED=true ./scripts/run_scale.sh
+
+PLAY [Scale Tomcat instances on remote Ubuntu targets] *************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Validate requested instance_count] ***************************************
+ok: [tomcat-node-1] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+ok: [tomcat-node-2] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [Ensure shared home exists before scaling] ********************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Fail if shared Tomcat home does not exist] *******************************
+skipping: [tomcat-node-1]
+skipping: [tomcat-node-2]
+
+TASK [Ensure catalina base root exists] ****************************************
+changed: [tomcat-node-1]
+changed: [tomcat-node-2]
+
+TASK [Build desired instance list] *********************************************
+ok: [tomcat-node-1] => (item=1)
+ok: [tomcat-node-1] => (item=2)
+ok: [tomcat-node-2] => (item=1)
+ok: [tomcat-node-2] => (item=2)
+
+TASK [Discover existing instance directories] **********************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Build existing instance list] ********************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Compute create and remove lists] *****************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Show scale plan] *********************************************************
+ok: [tomcat-node-1] => {
+    "msg": {
+        "create": [
+            "app2"
+        ],
+        "desired": [
+            "app1",
+            "app2"
+        ],
+        "existing": [
+            "app1"
+        ],
+        "remove": []
+    }
+}
+ok: [tomcat-node-2] => {
+    "msg": {
+        "create": [
+            "app2"
+        ],
+        "desired": [
+            "app1",
+            "app2"
+        ],
+        "existing": [
+            "app1"
+        ],
+        "remove": []
+    }
+}
+
+TASK [Create base directory tree for new instances] ****************************
+changed: [tomcat-node-1] => (item=['app2', 'bin'])
+changed: [tomcat-node-2] => (item=['app2', 'bin'])
+changed: [tomcat-node-1] => (item=['app2', 'conf'])
+changed: [tomcat-node-2] => (item=['app2', 'conf'])
+changed: [tomcat-node-1] => (item=['app2', 'logs'])
+changed: [tomcat-node-2] => (item=['app2', 'logs'])
+changed: [tomcat-node-1] => (item=['app2', 'temp'])
+changed: [tomcat-node-2] => (item=['app2', 'temp'])
+changed: [tomcat-node-1] => (item=['app2', 'webapps'])
+changed: [tomcat-node-2] => (item=['app2', 'webapps'])
+changed: [tomcat-node-1] => (item=['app2', 'work'])
+changed: [tomcat-node-2] => (item=['app2', 'work'])
+
+TASK [Copy baseline conf files for new instances] ******************************
+changed: [tomcat-node-2] => (item=app2)
+changed: [tomcat-node-1] => (item=app2)
+
+TASK [Copy webapps for new instances] ******************************************
+changed: [tomcat-node-1] => (item=app2)
+changed: [tomcat-node-2] => (item=app2)
+
+TASK [Build instance definitions for all desired instances] ********************
+ok: [tomcat-node-1] => (item=app1)
+ok: [tomcat-node-1] => (item=app2)
+ok: [tomcat-node-2] => (item=app1)
+ok: [tomcat-node-2] => (item=app2)
+
+TASK [Render setenv.sh for desired instances] **********************************
+ok: [tomcat-node-1] => (item=app1)
+ok: [tomcat-node-2] => (item=app1)
+changed: [tomcat-node-1] => (item=app2)
+changed: [tomcat-node-2] => (item=app2)
+
+TASK [Render server.xml for desired instances] *********************************
+ok: [tomcat-node-1] => (item=app1)
+ok: [tomcat-node-2] => (item=app1)
+changed: [tomcat-node-1] => (item=app2)
+changed: [tomcat-node-2] => (item=app2)
+
+TASK [Validate server.xml for desired instances] *******************************
+ok: [tomcat-node-2] => (item=app1)
+ok: [tomcat-node-1] => (item=app1)
+ok: [tomcat-node-1] => (item=app2)
+ok: [tomcat-node-2] => (item=app2)
+
+TASK [Run Tomcat configtest for desired instances] *****************************
+ok: [tomcat-node-2] => (item=app1)
+ok: [tomcat-node-1] => (item=app1)
+ok: [tomcat-node-2] => (item=app2)
+ok: [tomcat-node-1] => (item=app2)
+
+TASK [Detect running desired instances] ****************************************
+ok: [tomcat-node-1] => (item=app1)
+ok: [tomcat-node-2] => (item=app1)
+ok: [tomcat-node-1] => (item=app2)
+ok: [tomcat-node-2] => (item=app2)
+
+TASK [Build running instance list] *********************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Compute instances that need startup] *************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Show runtime plan] *******************************************************
+ok: [tomcat-node-1] => {
+    "msg": {
+        "running": [
+            "app1"
+        ],
+        "start": [
+            "app2"
+        ]
+    }
+}
+ok: [tomcat-node-2] => {
+    "msg": {
+        "running": [
+            "app1"
+        ],
+        "start": [
+            "app2"
+        ]
+    }
+}
+
+TASK [Start required instances] ************************************************
+changed: [tomcat-node-1] => (item=app2)
+changed: [tomcat-node-2] => (item=app2)
+
+TASK [Wait for required instance HTTP ports] ***********************************
+ok: [tomcat-node-1] => (item=app2)
+ok: [tomcat-node-2] => (item=app2)
+
+TASK [Health-check required instances] *****************************************
+ok: [tomcat-node-1] => (item=app2)
+ok: [tomcat-node-2] => (item=app2)
+
+TASK [Stop extra instances before deletion] ************************************
+skipping: [tomcat-node-1]
+skipping: [tomcat-node-2]
+
+TASK [Wait briefly before removing extra instances] ****************************
+skipping: [tomcat-node-1]
+
+TASK [Force kill stray Java processes that still reference removed CATALINA_BASE values] ***
+skipping: [tomcat-node-1]
+skipping: [tomcat-node-2]
+
+TASK [Remove extra instance directories] ***************************************
+skipping: [tomcat-node-1]
+skipping: [tomcat-node-2]
+
+TASK [Final scale summary] *****************************************************
+ok: [tomcat-node-1] => {
+    "msg": {
+        "created": [
+            "app2"
+        ],
+        "final_target_count": "2",
+        "removed": [],
+        "started": [
+            "app2"
+        ]
+    }
+}
+ok: [tomcat-node-2] => {
+    "msg": {
+        "created": [
+            "app2"
+        ],
+        "final_target_count": "2",
+        "removed": [],
+        "started": [
+            "app2"
+        ]
+    }
+}
+
+PLAY RECAP *********************************************************************
+tomcat-node-1              : ok=25   changed=7    unreachable=0    failed=0    skipped=5    rescued=0    ignored=0   
+tomcat-node-2              : ok=25   changed=7    unreachable=0    failed=0    skipped=4    rescued=0    ignored=0   
+

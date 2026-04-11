@@ -1,0 +1,5 @@
+{
+  "expected_instances": 5,
+  "health_path": "/",
+  "timeout_seconds": 10
+}

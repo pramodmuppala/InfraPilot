@@ -1,0 +1,7 @@
++ ansible -i /home/parallels/Desktop/Parallels Shared Folders/Home/Desktop/Automation/InfraPilot/inventory/lab.ini tomcat -b -m shell -a ls -l /opt/products/tomcat/tomcat10/bin/startup.sh /opt/products/tomcat/tomcat10/bin/catalina.sh || true
+tomcat-node-2 | CHANGED | rc=0 >>
+-rwxr-x--- 1 parallels parallels 23929 Mar  4  2025 /opt/products/tomcat/tomcat10/bin/catalina.sh
+-rwxr-x--- 1 parallels parallels  1904 Mar  4  2025 /opt/products/tomcat/tomcat10/bin/startup.sh
+tomcat-node-1 | CHANGED | rc=0 >>
+-rwxr-x--- 1 parallels parallels 23929 Mar  4  2025 /opt/products/tomcat/tomcat10/bin/catalina.sh
+-rwxr-x--- 1 parallels parallels  1904 Mar  4  2025 /opt/products/tomcat/tomcat10/bin/startup.sh

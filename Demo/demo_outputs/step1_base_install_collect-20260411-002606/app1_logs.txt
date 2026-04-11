@@ -1,0 +1,79 @@
++ ansible -i /home/parallels/Desktop/Parallels Shared Folders/Home/Desktop/Automation/InfraPilot/inventory/lab.ini tomcat -b -m shell -a tail -n 100 /opt/tomcat/app1/logs/catalina.out 2>/dev/null || true
+tomcat-node-2 | CHANGED | rc=0 >>
+11-Apr-2026 00:26:24.647 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.39
+11-Apr-2026 00:26:24.650 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 4 2025 19:02:32 UTC
+11-Apr-2026 00:26:24.650 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.39.0
+11-Apr-2026 00:26:24.651 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+11-Apr-2026 00:26:24.651 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.8.0-107-generic
+11-Apr-2026 00:26:24.651 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+11-Apr-2026 00:26:24.651 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/lib/jvm/java-11-openjdk-amd64
+11-Apr-2026 00:26:24.651 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           11.0.30+7-post-Ubuntu-1ubuntu122.04
+11-Apr-2026 00:26:24.651 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Ubuntu
+11-Apr-2026 00:26:24.651 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /opt/tomcat/app1
+11-Apr-2026 00:26:24.652 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /opt/products/tomcat/apache-tomcat-10.1.39
+11-Apr-2026 00:26:24.678 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/opt/tomcat/app1/conf/logging.properties
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dsun.io.useCanonCaches=false
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+11-Apr-2026 00:26:24.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Xms512m
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Xmx1024m
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -XX:+UseG1GC
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.security.egd=file:/dev/./urandom
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dfile.encoding=UTF-8
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/opt/tomcat/app1
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/opt/products/tomcat/tomcat10
+11-Apr-2026 00:26:24.682 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/opt/tomcat/app1/temp
+11-Apr-2026 00:26:24.685 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib]
+11-Apr-2026 00:26:25.082 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+11-Apr-2026 00:26:25.131 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [814] milliseconds
+11-Apr-2026 00:26:25.207 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+11-Apr-2026 00:26:25.207 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.39]
+11-Apr-2026 00:26:25.246 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+11-Apr-2026 00:26:25.269 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [137] milliseconds
+tomcat-node-1 | CHANGED | rc=0 >>
+11-Apr-2026 00:26:24.471 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.39
+11-Apr-2026 00:26:24.475 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 4 2025 19:02:32 UTC
+11-Apr-2026 00:26:24.475 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.39.0
+11-Apr-2026 00:26:24.476 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+11-Apr-2026 00:26:24.476 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.8.0-107-generic
+11-Apr-2026 00:26:24.476 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+11-Apr-2026 00:26:24.476 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/lib/jvm/java-11-openjdk-amd64
+11-Apr-2026 00:26:24.476 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           11.0.30+7-post-Ubuntu-1ubuntu122.04
+11-Apr-2026 00:26:24.476 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Ubuntu
+11-Apr-2026 00:26:24.476 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /opt/tomcat/app1
+11-Apr-2026 00:26:24.481 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /opt/products/tomcat/apache-tomcat-10.1.39
+11-Apr-2026 00:26:24.499 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/opt/tomcat/app1/conf/logging.properties
+11-Apr-2026 00:26:24.499 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+11-Apr-2026 00:26:24.499 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+11-Apr-2026 00:26:24.499 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+11-Apr-2026 00:26:24.499 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dsun.io.useCanonCaches=false
+11-Apr-2026 00:26:24.499 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Xms512m
+11-Apr-2026 00:26:24.500 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Xmx1024m
+11-Apr-2026 00:26:24.501 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -XX:+UseG1GC
+11-Apr-2026 00:26:24.502 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.security.egd=file:/dev/./urandom
+11-Apr-2026 00:26:24.502 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dfile.encoding=UTF-8
+11-Apr-2026 00:26:24.503 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/opt/tomcat/app1
+11-Apr-2026 00:26:24.503 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/opt/products/tomcat/tomcat10
+11-Apr-2026 00:26:24.504 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/opt/tomcat/app1/temp
+11-Apr-2026 00:26:24.505 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib]
+11-Apr-2026 00:26:24.825 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+11-Apr-2026 00:26:24.847 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [738] milliseconds
+11-Apr-2026 00:26:24.891 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+11-Apr-2026 00:26:24.891 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.39]
+11-Apr-2026 00:26:24.911 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+11-Apr-2026 00:26:24.941 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [93] milliseconds

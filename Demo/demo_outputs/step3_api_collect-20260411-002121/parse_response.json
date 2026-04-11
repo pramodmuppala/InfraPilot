@@ -1,0 +1,1 @@
+{"request_id":"req-20260411042121-2f4f155a","parsed_spec":{"application":{"type":"java","artifact_source":"sample-war"},"runtime":{"platform":"tomcat","port":8080},"deployment":{"instances":5,"auto_recovery":true,"target_group":"tomcat"},"health_check":{"path":"/","interval_seconds":30}},"warnings":[]}

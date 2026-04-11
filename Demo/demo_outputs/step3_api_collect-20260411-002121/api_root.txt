@@ -1,0 +1,2 @@
++ curl -sS http://10.211.55.38:8000/
+{"app":"InfraPilot Control Plane","status":"ok","docs":"/docs"}

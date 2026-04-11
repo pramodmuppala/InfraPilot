@@ -1,0 +1,49 @@
+---
+tomcat_archive_version: "10.1.39"
+
+tomcat:
+  runtime_user: parallels
+  runtime_group: parallels
+  java_packages:
+    - default-jdk
+    - curl
+    - tar
+    - xmlstarlet
+    - libxml2-utils
+  shared_home: /opt/products/tomcat/tomcat10
+  archive_version: "{{ tomcat_archive_version }}"
+  archive_url: "https://archive.apache.org/dist/tomcat/tomcat-10/v{{ tomcat_archive_version }}/bin/apache-tomcat-{{ tomcat_archive_version }}.tar.gz"
+  archive_sha512: ""
+  catalina_base_root: /opt/tomcat
+  instance_name_prefix: app
+  instance_start_index: 1
+  instance_count: 5
+  destroy_enabled: true
+  port_stride: 100
+  java_home: /usr/lib/jvm/default-java
+  catalina_opts: "-Xms512m -Xmx1024m -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom"
+  file_encoding: UTF-8
+  uri_encoding: UTF-8
+  health_path: /
+  health_timeout: 10
+  startup_wait_seconds: 8
+  base_ports:
+    http: 8080
+    redirect: 10003
+    shutdown: 8005
+  service:
+    name: Catalina
+  engine:
+    name: Catalina
+    defaultHost: localhost
+  hosts:
+    - name: localhost
+      appBase: webapps
+      unpackWARs: "true"
+      autoDeploy: "true"
+  connectors:
+    - protocol: HTTP/1.1
+      connectionTimeout: 20000
+  install_prereqs: true
+  install_tomcat: true
+  verify_health: true

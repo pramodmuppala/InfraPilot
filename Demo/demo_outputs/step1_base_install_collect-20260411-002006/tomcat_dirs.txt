@@ -1,0 +1,11 @@
++ ansible -i /home/parallels/Desktop/Parallels Shared Folders/Home/Desktop/Automation/InfraPilot/inventory/lab.ini tomcat -b -m shell -a ls -ld /opt/products/tomcat /opt/products/tomcat/tomcat10 /opt/tomcat /opt/tomcat/app1 || true
+tomcat-node-1 | CHANGED | rc=0 >>
+drwxr-xr-x 3 parallels parallels 4096 Apr 10 20:56 /opt/products/tomcat
+lrwxrwxrwx 1 parallels parallels   42 Apr 10 20:56 /opt/products/tomcat/tomcat10 -> /opt/products/tomcat/apache-tomcat-10.1.39
+drwxr-xr-x 3 root      root      4096 Apr 11 00:20 /opt/tomcat
+drwxr-xr-x 9 parallels parallels 4096 Apr 11 00:20 /opt/tomcat/app1
+tomcat-node-2 | CHANGED | rc=0 >>
+drwxr-xr-x 3 parallels parallels 4096 Apr 10 20:56 /opt/products/tomcat
+lrwxrwxrwx 1 parallels parallels   42 Apr 10 20:56 /opt/products/tomcat/tomcat10 -> /opt/products/tomcat/apache-tomcat-10.1.39
+drwxr-xr-x 3 root      root      4096 Apr 11 00:20 /opt/tomcat
+drwxr-xr-x 9 parallels parallels 4096 Apr 11 00:20 /opt/tomcat/app1

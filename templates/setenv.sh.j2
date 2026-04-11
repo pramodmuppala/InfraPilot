@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+export JAVA_HOME="{{ tomcat.java_home }}"
+export CATALINA_HOME="{{ tomcat.shared_home }}"
+export CATALINA_BASE="{{ instance_base }}"
+export CATALINA_PID="{{ instance_base }}/temp/catalina.pid"
+export CATALINA_OPTS="$CATALINA_OPTS {{ tomcat.catalina_opts }} -Dfile.encoding={{ tomcat.file_encoding }}"

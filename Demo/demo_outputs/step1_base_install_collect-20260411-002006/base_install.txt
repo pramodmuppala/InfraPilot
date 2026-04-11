@@ -1,0 +1,133 @@
++ /bin/bash -lc cd "/home/parallels/Desktop/Parallels Shared Folders/Home/Desktop/Automation/InfraPilot" && ./scripts/run_base_install.sh
+
+PLAY [Base Tomcat install and configure on remote Ubuntu targets] **************
+
+TASK [Gathering Facts] *********************************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Ensure apt cache is up to date] ******************************************
+changed: [tomcat-node-2]
+changed: [tomcat-node-1]
+
+TASK [Install required packages on Debian/Ubuntu] ******************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Ensure runtime group exists] *********************************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Ensure runtime user exists] **********************************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Create top-level Tomcat directories] *************************************
+ok: [tomcat-node-2] => (item=/opt/products)
+ok: [tomcat-node-1] => (item=/opt/products)
+changed: [tomcat-node-2] => (item=/opt/products/tomcat)
+changed: [tomcat-node-1] => (item=/opt/products/tomcat)
+ok: [tomcat-node-2] => (item=/opt/tomcat)
+ok: [tomcat-node-1] => (item=/opt/tomcat)
+
+TASK [Download Tomcat archive] *************************************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Create shared home parent directory] *************************************
+changed: [tomcat-node-1]
+changed: [tomcat-node-2]
+
+TASK [Unarchive Tomcat distribution] *******************************************
+skipping: [tomcat-node-1]
+skipping: [tomcat-node-2]
+
+TASK [Link shared home to versioned Tomcat directory] **************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Create instance directory structure for app1] ****************************
+changed: [tomcat-node-1] => (item=bin)
+changed: [tomcat-node-2] => (item=bin)
+changed: [tomcat-node-1] => (item=conf)
+changed: [tomcat-node-2] => (item=conf)
+changed: [tomcat-node-1] => (item=logs)
+changed: [tomcat-node-2] => (item=logs)
+changed: [tomcat-node-1] => (item=temp)
+changed: [tomcat-node-2] => (item=temp)
+changed: [tomcat-node-1] => (item=webapps)
+changed: [tomcat-node-2] => (item=webapps)
+changed: [tomcat-node-1] => (item=work)
+changed: [tomcat-node-2] => (item=work)
+changed: [tomcat-node-1] => (item=lib)
+changed: [tomcat-node-2] => (item=lib)
+
+TASK [Check whether app1 server.xml already exists] ****************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Copy baseline conf files from shared home into app1 if missing] **********
+changed: [tomcat-node-2]
+changed: [tomcat-node-1]
+
+TASK [Render setenv.sh for app1] ***********************************************
+changed: [tomcat-node-1]
+changed: [tomcat-node-2]
+
+TASK [Validate setenv.sh syntax] ***********************************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Render server.xml for app1] **********************************************
+changed: [tomcat-node-1]
+changed: [tomcat-node-2]
+
+TASK [Validate server.xml with xmllint] ****************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Run Tomcat configtest for app1] ******************************************
+ok: [tomcat-node-2]
+ok: [tomcat-node-1]
+
+TASK [Stop app1 if already running] ********************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Wait briefly after shutdown] *********************************************
+Pausing for 3 seconds
+(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
+ok: [tomcat-node-1]
+
+TASK [Start app1] **************************************************************
+changed: [tomcat-node-1]
+changed: [tomcat-node-2]
+
+TASK [Wait for app1 HTTP port] *************************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Run HTTP health check for app1] ******************************************
+ok: [tomcat-node-1]
+ok: [tomcat-node-2]
+
+TASK [Report app1 result] ******************************************************
+ok: [tomcat-node-1] => {
+    "msg": {
+        "health_status": "404",
+        "http_port": "8080",
+        "instance": "app1"
+    }
+}
+ok: [tomcat-node-2] => {
+    "msg": {
+        "health_status": "404",
+        "http_port": "8080",
+        "instance": "app1"
+    }
+}
+
+PLAY RECAP *********************************************************************
+tomcat-node-1              : ok=23   changed=8    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+tomcat-node-2              : ok=22   changed=8    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+

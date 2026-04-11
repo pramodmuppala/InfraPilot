@@ -1,0 +1,1 @@
+{"status":"degraded","healthy_instances":[],"unhealthy_instances":["app1"],"instances":[{"instance_name":"app1","instance_base":"/opt/tomcat/app1","http_port":8080,"directory_exists":false,"process_running":false,"port_open":false,"health_ok":false,"overall_status":"unhealthy"}]}

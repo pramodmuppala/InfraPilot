@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Server port="{{ shutdown_port }}" shutdown="SHUTDOWN">
+  <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+  <Service name="{{ tomcat.service.name }}">
+    <Connector port="{{ http_port }}"
+               protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="{{ redirect_port }}"
+               URIEncoding="{{ tomcat.uri_encoding }}" />
+
+    <Engine name="{{ tomcat.engine.name }}" defaultHost="{{ tomcat.engine.defaultHost }}">
+      {% for host in tomcat.hosts %}
+      <Host name="{{ host.name }}" appBase="{{ host.appBase }}" unpackWARs="{{ host.unpackWARs }}" autoDeploy="{{ host.autoDeploy }}" />
+      {% endfor %}
+    </Engine>
+  </Service>
+</Server>

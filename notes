@@ -1,0 +1,13 @@
+Step 3
+
+Build the new FastAPI control-plane repo.
+
+Step 4
+
+Add routing:
+
+install/config requests → DeployTomcat10
+scale requests → Tomcat10-Autoscaler-OpenAI
+Step 5
+
+Add health verification and traffic generation from Windows.

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InfraPilot Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div>
+        <h1>InfraPilot Dashboard</h1>
+        <p>Deployment, scaling, verification, and recovery control plane</p>
+      </div>
+      <div class="hero-actions">
+        <button id="refresh-all">Refresh</button>
+        <a href="/docs" target="_blank" rel="noreferrer">Open API Docs</a>
+      </div>
+    </header>
+
+    <section class="grid summary-grid">
+      <div class="card">
+        <h2>Control Plane</h2>
+        <div class="metric-row"><span>Status</span><strong id="api-status">—</strong></div>
+        <div class="metric-row"><span>Dashboard</span><strong>/dashboard</strong></div>
+      </div>
+
+      <div class="card">
+        <h2>Latest Deployment</h2>
+        <div class="metric-row"><span>Status</span><strong id="latest-deploy-status">—</strong></div>
+        <div class="metric-row"><span>Instances</span><strong id="latest-deploy-instances">—</strong></div>
+        <div class="metric-row"><span>ID</span><code id="latest-deploy-id">—</code></div>
+      </div>
+
+      <div class="card">
+        <h2>Latest Recovery</h2>
+        <div class="metric-row"><span>Status</span><strong id="latest-recover-status">—</strong></div>
+        <div class="metric-row"><span>Recovered</span><strong id="latest-recover-targets">—</strong></div>
+        <div class="metric-row"><span>ID</span><code id="latest-recover-id">—</code></div>
+      </div>
+
+      <div class="card">
+        <h2>Latest Verify</h2>
+        <div class="metric-row"><span>Overall</span><strong id="latest-verify-status">—</strong></div>
+        <div class="metric-row"><span>Healthy</span><strong id="latest-verify-healthy">—</strong></div>
+        <div class="metric-row"><span>Unhealthy</span><strong id="latest-verify-unhealthy">—</strong></div>
+      </div>
+    </section>
+
+    <section class="grid two-col">
+      <div class="card">
+        <h2>Actions</h2>
+        <div class="actions">
+          <button data-action="deploy1">Deploy 1</button>
+          <button data-action="deploy5">Deploy 5</button>
+          <button data-action="verify">Verify</button>
+          <button data-action="recover-app3">Recover app3</button>
+        </div>
+
+        <div class="form-block">
+          <label for="custom-prompt">Custom prompt</label>
+          <textarea id="custom-prompt" rows="5">Deploy a scalable Java app with 5 instances and auto-recovery</textarea>
+          <div class="actions">
+            <button data-action="plan">Plan</button>
+            <button data-action="execute">Execute</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Prompt Help</h2>
+        <p>Use clear desired-state prompts with an explicit instance count.</p>
+
+        <h3>Examples</h3>
+        <ul>
+          <li>Deploy a scalable Java app with 1 instance</li>
+          <li>Deploy a scalable Java app with 5 instances and auto-recovery</li>
+          <li>Increase JVMs to 5</li>
+          <li>Scale Tomcats to 4</li>
+          <li>Reduce JVMs to 1</li>
+          <li>Scale instances to 5 with auto-recovery</li>
+        </ul>
+
+        <h3>Supported terms</h3>
+        <p>JVMs, Tomcats, instances, and nodes are treated as equivalent scaling targets.</p>
+
+        <h3>Recommended style</h3>
+        <p>Use a verb plus a target count, such as “Increase JVMs to 5” or “Reduce Tomcats to 1”.</p>
+
+        <h3>Supported range</h3>
+        <p>Current supported instance range is <strong>1 to 5</strong>. Requests outside this range are rejected during validation.</p>
+
+        <h3>Avoid</h3>
+        <ul>
+          <li>Add more JVMs</li>
+          <li>Scale up a bit</li>
+          <li>Make it bigger</li>
+          <li>Optimize deployment</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Latest Action Output</h2>
+      <pre id="action-output">No action run yet.</pre>
+    </section>
+
+    <section class="grid two-col">
+      <div class="card">
+        <h2>Deployment History</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Deployment ID</th>
+                <th>Status</th>
+                <th>Instances</th>
+                <th>Started</th>
+              </tr>
+            </thead>
+            <tbody id="deploy-history-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Recovery History</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Recovery ID</th>
+                <th>Status</th>
+                <th>Instances</th>
+                <th>Started</th>
+              </tr>
+            </thead>
+            <tbody id="recover-history-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid two-col">
+      <div class="card">
+        <h2>Latest Deployment Record</h2>
+        <pre id="latest-deploy-record">Loading…</pre>
+      </div>
+
+      <div class="card">
+        <h2>Latest Recovery Record</h2>
+        <pre id="latest-recover-record">Loading…</pre>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Latest Verify Result</h2>
+      <pre id="latest-verify-record">No verify run yet.</pre>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

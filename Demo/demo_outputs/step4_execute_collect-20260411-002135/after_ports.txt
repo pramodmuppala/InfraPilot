@@ -1,0 +1,7 @@
++ ansible -i /home/parallels/Desktop/Parallels Shared Folders/Home/Desktop/Automation/InfraPilot/inventory/lab.ini tomcat -b -m shell -a ss -ltnp | egrep ':8080|:8180|:8280|:8380|:8480' || true
+tomcat-node-2 | CHANGED | rc=0 >>
+LISTEN 0      100                     *:8180             *:*    users:(("java",pid=63076,fd=43))         
+LISTEN 0      100                     *:8080             *:*    users:(("java",pid=64231,fd=43))         
+tomcat-node-1 | CHANGED | rc=0 >>
+LISTEN 0      100                     *:8180             *:*    users:(("java",pid=58776,fd=43))         
+LISTEN 0      100                     *:8080             *:*    users:(("java",pid=59756,fd=43))         

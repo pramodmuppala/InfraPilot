@@ -1,0 +1,1 @@
+{"valid":true,"violations":[],"normalized_spec":{"application":{"type":"java","artifact_source":"sample-war"},"runtime":{"platform":"tomcat","port":8080},"deployment":{"instances":5,"auto_recovery":true,"target_group":"tomcat"},"health_check":{"path":"/","interval_seconds":30}}}
