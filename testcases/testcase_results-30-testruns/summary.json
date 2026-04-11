@@ -1,0 +1,34 @@
+{
+  "base_deploy_1": {
+    "runs": 37,
+    "success_rate": 1.0,
+    "avg_duration_seconds": 54.648648648648646,
+    "min_duration_seconds": 33.0,
+    "max_duration_seconds": 89.0,
+    "avg_unhealthy_count": 1
+  },
+  "scale_up_5": {
+    "runs": 36,
+    "success_rate": 1.0,
+    "avg_duration_seconds": 58.94444444444444,
+    "min_duration_seconds": 40.0,
+    "max_duration_seconds": 148.0,
+    "avg_unhealthy_count": 5
+  },
+  "scale_down_1": {
+    "runs": 36,
+    "success_rate": 1.0,
+    "avg_duration_seconds": 54.083333333333336,
+    "min_duration_seconds": 39.0,
+    "max_duration_seconds": 159.0,
+    "avg_unhealthy_count": 1
+  },
+  "kill_and_recover_app3": {
+    "runs": 35,
+    "success_rate": 0.0,
+    "avg_duration_seconds": 54.22857142857143,
+    "min_duration_seconds": 42.0,
+    "max_duration_seconds": 75.0,
+    "avg_unhealthy_count": 5
+  }
+}
