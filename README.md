@@ -1,156 +1,223 @@
-# Combined Tomcat Remote Deployment Package
+# InfraPilot
 
-This package combines the **base Tomcat deployment/configuration** flow and the **instance scaling** flow into one remote-execution Ansible package for your Fedora control plane.
+**InfraPilot is a natural-language control plane for Tomcat operations.**  
+It lets an operator use plain-English commands to bring Tomcat instances up, scale them, verify runtime health, and trigger recovery workflows through a guarded automation layer.
 
-## What this package does
+Instead of manually stitching together scripts, playbooks, and host-level checks, InfraPilot provides a single prompt-driven interface that translates operator intent into validated, deterministic execution.
 
-- Runs from **Fedora** against **remote Ubuntu** targets over SSH
-- Installs prerequisite packages on Ubuntu when requested
-- Creates or reuses a shared `CATALINA_HOME`
-- Creates or updates `CATALINA_BASE` instances under `/opt/tomcat`
-- Generates per-instance `setenv.sh` and `server.xml`
-- Starts missing Tomcat instances
-- Optionally destroys extra instances when scaling down
-- Runs simple HTTP health checks after deployment
+## Why InfraPilot
 
-## Included flows
+Modern infrastructure teams often have strong automation, but the operational experience is still fragmented. Routine lifecycle actions such as deployment, scaling, verification, and recovery typically require multiple tools, context switching, and knowledge of environment-specific commands.
 
-### 1. Base install / configure
-Use `playbooks/install_configure_tomcat.yml` to:
-- install Java and utilities
-- prepare Tomcat directories
-- deploy `app1`
-- generate config for `app1`
-- validate XML with `xmllint`
-- start Tomcat
+InfraPilot simplifies that workflow by acting as a natural-language command surface for Java/Tomcat environments. It combines:
 
-### 2. Scale instances
-Use `playbooks/scale_tomcat_instances.yml` to:
-- create additional instances (`app2`, `app3`, ...)
-- assign offset ports using `port_stride`
-- keep existing instances untouched
-- optionally destroy extra instances with `destroy_enabled=true`
+- natural-language intent parsing
+- policy-based validation
+- deterministic Ansible-backed execution
+- runtime verification
+- targeted recovery
+- dashboard and API visibility
 
-## Lab mapping
+The result is a cleaner operator experience for managing Tomcat lifecycle actions with bounded, auditable behavior.
 
-- Fedora: control plane
-- Ubuntu 1: tomcat-node-1
-- Ubuntu 2: tomcat-node-2
-- Windows: traffic generator
+## What You Can Type
 
-## Files to update first
+InfraPilot supports plain-English operational prompts such as:
 
-### Inventory
-Edit `inventory/lab.ini`
+- `Deploy a scalable Java app with 1 instance`
+- `Deploy a scalable Java app with 5 instances and auto-recovery`
+- `Increase JVMs to 5`
+- `Scale Tomcats to 4`
+- `Reduce JVMs to 1`
 
-### Variables
-Edit `group_vars/tomcat.yml`
+InfraPilot currently normalizes **JVMs**, **Tomcats**, **instances**, and **nodes** into the same operational model: **desired Tomcat instance count**.
 
-Pay special attention to:
-- `tomcat.java_packages`
-- `tomcat.shared_home`
-- `tomcat.archive_url`
-- `tomcat.archive_version`
-- `tomcat.runtime_user`
-- `tomcat.health_path`
+## What It Does
 
-## Quick start
+InfraPilot turns natural-language requests into a controlled execution flow:
 
-### Connectivity test
-```bash
-ansible -i inventory/lab.ini tomcat -m ping
+1. Parse operator intent
+2. Normalize it into a structured deployment specification
+3. Validate against supported policy and range limits
+4. Execute deterministic deployment or scaling workflows
+5. Verify runtime state
+6. Persist execution history
+7. Trigger targeted recovery when required
+
+## Highlights
+
+- Natural-language command interface for Tomcat lifecycle operations
+- Guarded control path with explicit validation
+- Deterministic execution instead of free-form runtime generation
+- Desired-state scaling and reconciliation
+- Health verification for deployed instances
+- Targeted single-instance recovery workflow
+- Lightweight dashboard and API control surface
+- Repeatable testcase-driven evaluation
+
+## Architecture
+
+```mermaid
+flowchart LR
+    U[Operator / User] --> D[Dashboard]
+    U --> A[API / Swagger]
+
+    D --> CP[FastAPI Control Plane]
+    A --> CP
+
+    CP --> P[Intent Parser]
+    CP --> V[Policy Validator]
+    CP --> PL[Deployment Planner]
+    CP --> EX[Execution Orchestrator]
+    CP --> VF[Verifier]
+    CP --> RC[Recovery Service]
+
+    EX --> S1[run_base_install.sh]
+    EX --> S2[run_scale.sh]
+    RC --> S3[recover_instance.sh]
+
+    S1 --> ANS[Ansible Playbooks]
+    S2 --> ANS
+    ANS --> N1[Tomcat Node 1]
+    ANS --> N2[Tomcat Node 2]
+
+    VF --> N1
+    VF --> N2
+
+    CP --> ST[(Execution / Recovery Store)]
 ```
 
-### Base install on both Ubuntu nodes
-```bash
-ansible-playbook -i inventory/lab.ini playbooks/install_configure_tomcat.yml
+## Lab Topology
+
+- **Fedora VM**: control plane
+- **Ubuntu VMs**: Tomcat application nodes
+- **Windows VM**: optional traffic generation and demo support
+
+## API Endpoints
+
+- `/intent/parse`
+- `/spec/validate`
+- `/deploy/plan`
+- `/deploy/execute`
+- `/deploy/status/{deployment_id}`
+- `/deploy/history`
+- `/deploy/verify`
+- `/deploy/recover`
+- `/deploy/recover/status/{recovery_id}`
+- `/deploy/recover/history`
+- `/dashboard`
+
+## Evaluation Methodology
+
+InfraPilot was evaluated using repeatable operational testcases:
+
+- **TC01**: base deployment to 1 instance
+- **TC02**: scale up to 5 instances
+- **TC03**: scale down to 1 instance
+- **TC04**: kill one instance and attempt targeted recovery
+
+## Testcase Summary
+
+| Scenario | Runs | Success Rate | Avg Duration (s) | Min (s) | Max (s) | Avg Unhealthy Count |
+|---|---:|---:|---:|---:|---:|---:|
+| base_deploy_1 | 100 | 100.0% | 51.47 | 36.0 | 249.0 | 1 |
+| scale_up_5 | 100 | 100.0% | 51.66 | 36.0 | 299.0 | 5 |
+| scale_down_1 | 100 | 100.0% | 45.93 | 34.0 | 137.0 | 1 |
+| kill_and_recover_app3 | 100 | 0.0% | 57.24 | 39.0 | 329.0 | 5 |
+
+## Interpretation
+
+The testcase results show that the natural-language deployment, scale-up, and scale-down paths are stable across repeated runs. The targeted recovery testcase currently shows a **0% success rate**, which indicates that automated recovery hardening remains an active engineering focus.
+
+That result is still useful because it clearly separates:
+
+- a working **natural-language command path for bringing Tomcats up and scaling them**
+- an incomplete **recovery path** that still needs refinement
+
+## Plots
+
+Place the generated plot images under `testcase_results/plots/` and they will render in this README.
+
+### Average Duration by Scenario
+
+![Average duration by scenario](testcase_results/plots/avg_duration_by_scenario.png)
+
+### Success Rate by Scenario
+
+![Success rate by scenario](testcase_results/plots/success_rate_by_scenario.png)
+
+## Repository Structure
+
+```text
+InfraPilot/
+  inventory/
+  playbooks/
+  scripts/
+  templates/
+  controller/
+  testcases/
+    run_all_testcases.sh
+    tc01_scenario_base_deploy_1.sh
+    tc02_scenario_scale_up_5.sh
+    tc03_scenario_scale_down_1.sh
+    tc04_scenario_kill_and_recover_app3.sh
+    summarize_results.py
+    generate_plots.py
+    testcase_results/
 ```
 
-### Scale to 2 instances on both Ubuntu nodes
-```bash
-ansible-playbook -i inventory/lab.ini playbooks/scale_tomcat_instances.yml -e '{"tomcat":{"instance_count":2}}'
-```
+## Demo Flow
 
-### Scale down to 1 instance and remove extras
-```bash
-ansible-playbook -i inventory/lab.ini playbooks/scale_tomcat_instances.yml -e '{"tomcat":{"instance_count":1, "destroy_enabled":true}}'
-```
+1. Enter a natural-language command to bring Tomcats up
+2. Scale to 5 instances using natural language
+3. Verify healthy state
+4. Kill `app3`
+5. Re-run verification
+6. Trigger recovery
+7. Review testcase metrics and plots
 
-## Notes
+## Current Scope
 
-- This package is intentionally **remote-execution first**. It does **not** use `connection: local`.
-- `validate_server_xml` is not split into a separate role here. XML validation is handled inline with `xmllint`.
-- The scaling playbook is designed for **single-host multi-instance Tomcat** on each Ubuntu VM.
-- If you want application WAR deployment next, add it as a separate role after the base instance creation flow.
+InfraPilot is intentionally bounded to preserve operational safety and auditability.
 
-## Supported Natural Language Prompts
+### Supported
 
-InfraPilot currently supports clear desired-state prompts for Java/Tomcat deployment, scaling, verification, and recovery workflows.
+- Natural-language commands for Tomcat lifecycle operations
+- Java application deployment
+- Tomcat runtime
+- Instance-count scaling
+- Verification and targeted recovery
+- Guarded prompts with explicit desired state
 
-### Recommended prompt patterns
+### Not yet generalized
 
-#### Deploy
-- Deploy a scalable Java app with 1 instance
-- Deploy a scalable Java app with 5 instances
-- Deploy a scalable Java app with 5 instances and auto-recovery
-- Deploy a Java app on Tomcat with 3 instances
-- Deploy a Tomcat-based Java app with 4 JVMs
+- Arbitrary infrastructure synthesis
+- Multi-runtime orchestration
+- Unbounded free-form operations
+- Production-scale policy orchestration
 
-#### Scale up
-- Increase JVMs to 5
-- Increase Tomcats to 4
-- Increase Tomcat instances to 5
-- Scale JVMs to 5
-- Scale Tomcats to 5
-- Scale instances to 4
-- Set instances to 5
-- Run 5 JVMs
+## Future Work
 
-#### Scale down
-- Decrease JVMs to 2
-- Reduce JVMs to 1
-- Reduce Tomcats to 1
-- Scale down to 1 instance
-- Scale Tomcats to 1
-- Set instances to 1
+- Improve targeted recovery reliability
+- Extend policy and validation rules
+- Add richer dashboard observability
+- Expand runtime support beyond Tomcat
+- Compare against manual operator workflows
+- Strengthen paper-grade evaluation and reporting
 
-#### Auto-recovery
-- Deploy a scalable Java app with 5 instances and auto-recovery
-- Increase JVMs to 5 with auto-recovery
-- Scale Tomcats to 4 with auto-recovery
+## Positioning
 
-### Supported synonyms
+InfraPilot demonstrates a practical pattern for combining:
 
-InfraPilot currently treats the following terms as equivalent for scaling requests:
+- natural-language command input
+- bounded intent normalization
+- policy validation
+- deterministic infrastructure automation
+- runtime verification
+- targeted recovery
 
-- JVM / JVMs
-- Tomcat / Tomcats
-- instance / instances
-- node / nodes
+It is best described as a **natural-language command prompt for bringing Tomcats up and managing their lifecycle safely**.
 
-These are normalized internally to the desired Tomcat instance count.
-
-### Best prompts for demos
-
-- Deploy a scalable Java app with 1 instance and auto-recovery
-- Deploy a scalable Java app with 5 instances and auto-recovery
-- Increase JVMs to 5
-- Reduce JVMs to 1
-- Scale Tomcats to 4
-- Scale instances to 5 with auto-recovery
-
-### Avoid vague prompts
-
-For the current version, avoid ambiguous phrases such as:
-
-- Add more JVMs
-- Make it bigger
-- Scale up a bit
-- Optimize deployment
-- Make it highly available
-
-Use explicit prompts with a numeric desired count instead.
-
-
-python3 scripts/summarize_results.py experiments_output/results.csv
-python3 scripts/generate_plots.py experiments_output/results.csv experiments_output/plots
+## Dashboard
+![Dashboard 1](docs/dashboard1.png)
+![Dashboard 1](docs/dashboard1.png)
