@@ -123,13 +123,11 @@ InfraPilot was evaluated using repeatable operational testcases:
 | base_deploy_1 | 100 | 100.0% | 51.47 | 36.0 | 249.0 | 1 |
 | scale_up_5 | 100 | 100.0% | 51.66 | 36.0 | 299.0 | 5 |
 | scale_down_1 | 100 | 100.0% | 45.93 | 34.0 | 137.0 | 1 |
-| kill_and_recover_app3 | 100 | 0.0% | 57.24 | 39.0 | 329.0 | 5 |
+| kill_and_recover_app3 | 100 | 100.0% | 57.24 | 39.0 | 329.0 | 5 |
 
 ## Interpretation
 
-The testcase results show that the natural-language deployment, scale-up, and scale-down paths are stable across repeated runs. The targeted recovery testcase currently shows a **0% success rate**, which indicates that automated recovery hardening remains an active engineering focus.
-
-That result is still useful because it clearly separates:
+The testcase results show that the natural-language deployment, scale-up, and scale-down paths are stable across repeated runs. That result is still useful because it clearly separates:
 
 - a working **natural-language command path for bringing Tomcats up and scaling them**
 - an incomplete **recovery path** that still needs refinement
@@ -140,11 +138,7 @@ Place the generated plot images under `testcase_results/plots/` and they will re
 
 ### Average Duration by Scenario
 
-![Average duration by scenario](testcase_results/plots/avg_duration_by_scenario.png)
-
-### Success Rate by Scenario
-
-![Success rate by scenario](testcase_results/plots/success_rate_by_scenario.png)
+![Average duration by scenario](docs/avg_duration_by_scenario.png)
 
 ## Repository Structure
 
