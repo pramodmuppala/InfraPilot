@@ -8,5 +8,12 @@ router = APIRouter()
 
 @router.post("/validate", response_model=ValidateSpecResponse)
 def validate_spec_route(request: ValidateSpecRequest) -> ValidateSpecResponse:
-    valid, violations, normalized = validate_spec(request.spec)
-    return ValidateSpecResponse(valid=valid, violations=violations, normalized_spec=normalized if valid else None)
+    result = validate_spec(request.spec)
+    valid = result.get("valid", False)
+    violations = result.get("violations", [])
+    normalized = result.get("normalized_spec") or result.get("normalized")
+    return ValidateSpecResponse(
+        valid=valid,
+        violations=violations,
+        normalized_spec=normalized if valid else None,
+    )
